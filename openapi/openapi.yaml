@@ -1,0 +1,165 @@
+openapi: 3.0.3
+
+info:
+  title: Sber-marketing
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:3014/'
+
+paths:
+  /users/:
+    post:
+      operationId: createUser
+      summary: Создание пользователя
+      description: Создание пользователя
+      tags:
+        - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#components/schemas/User'
+      responses:
+        201:
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/User'
+    get:
+      operationId: ListingUsers
+      description: Листинг пользователей
+      tags:
+        - users
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/UserPagination'
+  /users/{userId}/:
+    get:
+      operationId: getUser
+      summary: Получения пользователя
+      description: Получения пользователя
+      tags:
+        - users
+      parameters:
+        - in: path
+          required: true
+          name: userId
+          schema:
+             type: string
+             format: uuid
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/User'
+    delete:
+      operationId: deleteUser
+      summary: Удаление пользователя
+      description: Удаление пользователя
+      tags:
+        - users
+      parameters:
+        - in: path
+          required: true
+          name: userId
+          schema:
+             type: string
+             format: uuid
+      responses:
+        204:
+          description: Пользователь удален
+    patch:
+      operationId: updateUser
+      summary: Обновление пользователя
+      description: Обновление пользователя
+      tags:
+        - users
+      parameters:
+        - in: path
+          required: true
+          name: userId
+          schema:
+             type: string
+             format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#components/schemas/User'
+      responses:
+        204:
+          description: Пользователь обновлен
+  /sse/users/:
+    get:
+      operationId: getUsersBySSE 
+      description: Получение всех пользователей по sse
+      tags:
+        - users
+        - sse
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref:  '#components/schemas/User'
+components:
+  schemas:
+    UserPagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 13
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 1
+        data:
+          type: array
+          items:
+            $ref: '#components/schemas/User'
+
+    User:
+      description: Пользователь
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 2cf822b8-e4b9-4d91-b855-f02637e46818
+          readOnly: true
+          nullable: false
+        lastName:
+          type: string
+          example: Вася
+          readOnly: false
+          nullable: true
+        firstName:
+          type: string
+          example: Андреевич
+          readOnly: false
+          nullable: false
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        deletedAt:
+          type: string
+          format: date-time
+          readOnly: true

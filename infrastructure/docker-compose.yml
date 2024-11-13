@@ -1,0 +1,46 @@
+name: sber
+services:
+  sber_db:
+    container_name: sber_db
+    restart: unless-stopped
+    image: postgres:12
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - ./var/pgdata:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT}:5432
+  backend:
+    container_name: backend
+    restart: unless-stopped
+    build: ../backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@sber_db:5432/${POSTGRES_DB}?schema=public"
+    depends_on:
+      sber_db:
+        condition: service_healthy
+    ports:
+      - 3014:3014
+  spec:
+    build: ../openapi
+    container_name: spec
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    volumes:
+      - ../openapi/openapi.yaml:/openapi.yaml
+    ports:
+      - 4444:8080
